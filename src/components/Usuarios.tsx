@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { reqRespApi } from "../api/reqRes";
 import { ReqRespListado, Usuario } from "../interfaces/reqResp";
 
 export const Usuarios = () => {
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+    const ficRefPage = useRef(1);
     useEffect(() => {
         //FIC: llamado de la API
+        manuFnCargaUsuarios();
         reqRespApi.get<ReqRespListado>('/users')
         .then(resp=> {
                // console.log(resp.data.data[0].first_name); 
@@ -14,7 +16,31 @@ export const Usuarios = () => {
         })
         .catch(err => console.log(err))
         }, [])
-        const renderItem = (usuario: Usuario) => {
+        const manuFnCargaUsuarios = async () => {
+            const ficResponse = await
+            //FIC: llamado de la API
+            reqRespApi.get<ReqRespListado>('/users',{
+                params:{
+                    page: ficRefPage.current
+                }
+            })
+            .then(resp=> {
+                //console.log(resp);   
+                //console.log(resp.data);
+                //console.log(resp.data.data);
+                //console.log(resp.data.data[0].first_name);
+                //console.log(resp.data.data);
+                if ( resp.data.data.length > 0 ) {
+                    setUsuarios(resp.data.data);
+                    ficRefPage.current ++;
+                }
+                else {
+                    alert('No hay mas registros');
+                }
+            })
+            .catch(err => console.log(err))
+        }     
+           const renderItem = (usuario: Usuario) => {
             return (
                 <tr key={usuario.id.toString()}>
                     <td>
@@ -60,6 +86,7 @@ export const Usuarios = () => {
     }
 </tbody>
             </table>
+            <button className="btn btn-primary">Siguiente</button>
         </>
     )
 }
